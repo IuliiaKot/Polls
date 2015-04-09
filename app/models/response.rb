@@ -1,6 +1,7 @@
 class Response < ActiveRecord::Base
 
   validates :user_id, :question_id, :answer_choice_id,  presence: true
+  validate :respondent_has_not_already_answered_question
 
   belongs_to(
     :respondent,
@@ -23,10 +24,13 @@ class Response < ActiveRecord::Base
   )
 
   def sibling_response
-    if self.id == nil
-      question.responses
-    else
-      question.responses.where("responses.id != ?", self.id)
+    #byebug
+    question.responses.where("responses.id != ? OR ? is NULL", self.id, self.id)
+  end
+
+  def respondent_has_not_already_answered_question
+    if sibling_response.exists?(user_id: self.user_id)
+      errors[:user_id] << "Already responded to question"
     end
   end
 end
