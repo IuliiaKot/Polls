@@ -21,4 +21,11 @@ class Question < ActiveRecord::Base
     source: :responses
   )
   # self.responses = self.answer_choices.responses
+
+  def results
+    answer_with_count = answer_choices
+      .select("answer_choices.*, count(responses.question_id) as num")
+      .joins("LEFT JOIN responses ON answer_choices.id = responses.answer_choice_id")
+      .group("answer_choices.text").count(:responses)
+  end
 end
